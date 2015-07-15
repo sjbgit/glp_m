@@ -22,6 +22,21 @@ gulp.task('vet', function() {
         .pipe($.jshint.reporter('fail'));
 });
 
+gulp.task('styles', function() {
+
+    log('compiling less => css' + config.less);
+
+    return gulp.src(config.less).pipe($.less()).pipe($.autoprefixer({browsers: ['last 2 version', '> 5%']})).pipe(gulp.dest(config.temp));
+
+    /*
+    return
+        gulp.src(config.less)
+            .pipe($.less())
+            .pipe($.autoprefixer({browsers: ['last 2 version', '> 5%']}))
+            .pipe(gulp.dest(config.temp));
+    */
+})
+
 function log(msg) {
     console.log(msg);
 }
