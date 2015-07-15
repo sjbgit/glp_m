@@ -59,10 +59,10 @@ gulp.task('wiredep', function(){
     var wiredep = require('wiredep').stream;
 
     return gulp
-        .src(config.index)
-        .pipe(wiredep(options))
-        .pipe($.inject(gulp.src(config.js)))
-        .pip(gulp.dest(config.client));
+        .src(config.index) //get html file
+        .pipe(wiredep(options)) //wiredep will see dependencies
+        .pipe($.inject(gulp.src(config.js))) //get all local js files
+        .pipe(gulp.dest(config.client));
 
 });
 
