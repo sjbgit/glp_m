@@ -4,6 +4,7 @@
 var gulp = require('gulp');
 var args = require('yargs').argv;
 var config = require('./gulp.config')();
+var del = require('del');
 
 console.log(config);
 
@@ -22,11 +23,16 @@ gulp.task('vet', function() {
         .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('styles', function() {
+gulp.task('styles', ['clean-styles'], function() {
 
     log('compiling less => css' + config.less);
 
-    return gulp.src(config.less).pipe($.less()).pipe($.autoprefixer({browsers: ['last 2 version', '> 5%']})).pipe(gulp.dest(config.temp));
+    return gulp.src(config.less)
+        .pipe($.plumber())
+        .pipe($.less())
+        //.on('error', errorLogger)
+        .pipe($.autoprefixer({browsers: ['last 2 version', '> 5%']}))
+        .pipe(gulp.dest(config.temp));
 
     /*
     return
@@ -35,8 +41,31 @@ gulp.task('styles', function() {
             .pipe($.autoprefixer({browsers: ['last 2 version', '> 5%']}))
             .pipe(gulp.dest(config.temp));
     */
-})
+});
+
+gulp.task('clean-styles', function(done) {
+    var files = config.temp + '**/*.css';
+    clean(files, done);
+});
+
+gulp.task('less-watcher', function() {
+   gulp.watch([config.less], ['styles']);
+});
 
 function log(msg) {
     console.log(msg);
 }
+
+function clean(path, done) {
+    log('Cleaning: ' + path);
+    del(path, done);
+}
+
+/*
+function errorLogger(error) {
+    log('*****  Start of Error ******');
+    log(error);
+    log('*****  Start of Error ******');
+    this.emit('end');
+}
+*/
