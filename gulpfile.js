@@ -9,6 +9,7 @@ var del = require('del');
 console.log(config);
 
 var $ = require('gulp-load-plugins')({lazy: true});
+var port = process.env.PORT || config.defaultPort;
 
 gulp.task('vet', function() {
     log('running vet - analyzer with jshint and jscs');
@@ -77,6 +78,35 @@ gulp.task('inject', ['wiredep', 'styles'], function(){
         .pipe($.inject(gulp.src(config.css))) //get all local js files
         .pipe(gulp.dest(config.client));
 
+});
+
+gulp.task('serve-dev', ['inject'], function() {
+    var isDev = true;
+
+    var nodeOptions = {
+        script: config.nodeServer, //app.js
+        delayTime: 1, //how long to wait before it re-runs
+        env: {
+            'PORT': port, //port to serve on (app.js)
+            'NODE_ENV': isDev ? 'dev' : 'build'//see (app.js)
+        },
+        watch: [config.server] //restart on changes to these files
+    };
+
+    return $.nodemon(nodeOptions)
+        .on('restart', function(ev) { //TODO: TRY TO GET VET WORKING
+            log('*** nodemon restarted');
+            log('files changed on restart: \n' + ev);
+        })
+        .on('start', function(ev) {
+            log('*** nodemon started');
+        })
+        .on('crash', function(ev) {
+            log('*** nodemon crashed');
+        })
+        .on('exit', function(ev) {
+            log('*** nodemon clean exit');
+        });
 });
 
 
