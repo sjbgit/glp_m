@@ -98,6 +98,12 @@ gulp.task('serve-dev', ['inject'], function() {
         .on('restart', function(ev) { //TODO: TRY TO GET VET WORKING
             log('*** nodemon restarted');
             log('files changed on restart: \n' + ev);
+
+            setTimeout(function() {
+                browserSync.notify('reloading now...');
+                browserSync.reload({stream: false});
+            }, config.browserReloadDelay);
+
         })
         .on('start', function(ev) {
             log('*** nodemon started');
@@ -109,18 +115,29 @@ gulp.task('serve-dev', ['inject'], function() {
         .on('exit', function(ev) {
             log('*** nodemon clean exit');
         });
-});
+})
+
+function changeEvent(event) {
+    log('File change event: ' + event);
+}
 
 function startBrowserSync() {
 
-    if(browserSync.active) {
+    if(args.nosync || browserSync.active) {
         return;
     }
+
+    gulp.watch([config.less], ['styles'])
+        .on('change', function(event) { changeEvent(event);});
 
     var options = {
         proxy: 'localhost:' + port,
         port: 3000,
-        files: [config.client + '**/*.*'],
+        files: [
+            config.client + '**/*.*',
+            '!' + config.less,
+            config.temp + '**/*.css'
+        ],
         ghostMode: {
             clicks: true,
             location: false,
